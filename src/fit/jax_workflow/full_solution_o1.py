@@ -192,7 +192,7 @@ def init_mlp_params(rng, layer_sizes):
 # ------------------------------------------------------------------------------
 def main():
     # 1) Load the piecewise data
-    data = load_piecewise_data("pk_dataset.npz")  
+    data = load_piecewise_data("pk_dataset_2C.npz")  
     # shape e.g. (num_samples, 4, 200, 2)
     num_samples, n_segments, steps_per_segment, _ = data.shape
     print("Loaded dataset shape:", data.shape)

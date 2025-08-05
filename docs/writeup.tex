@@ -1,0 +1,406 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{cancel}
+
+\title{optimal-gradient}
+\author{Shayan Hajhashemi}
+\date{January 2024}
+
+\begin{document}
+
+\section{Optimal Control - Sensitivity Analysis}
+
+\section{Parameter Optimization}
+\[
+\frac{d\underline{x}}{dt}=\dot{\underline{x}}(t) = f\left(\underline{x}(t),\underline{\theta}, t\right), \quad \underline{x}(t_0) = \underline{x}_0
+\]
+Where $\theta$ is the vector of parameters.
+\[
+J(\underline{x}(t), \underline{\theta}) = \int^T_{t_0}{g(\underline{x}(t), \underline{\theta}, t) dt}
+\]
+We want to solve:
+\[
+\left\{\begin{array}{l}
+\begin{aligned}
+& \underset{\underline{\theta}}{\text{minimize}} & & J \\
+& \text{subject to} & & \dot{\underline{x}}(t) \\
+\end{aligned}
+\end{array}\right.
+\]
+
+Use the time dependent Lagrange multiplier ($\underline{\lambda}^{\top}(t)$) method for this equality constrained optimization
+\[
+L=J+\int_{t_0}^T \underline{\lambda}^{{\top}}(t)[f(\underline{x}(t), \underline{\theta}, t)-\dot{\underline{x}}(t)] dt
+\]
+\[
+L = \int^T_{t_0}{g(\underline{x}(t), \underline{\theta}, t) dt} + \underline{\lambda}^{{\top}}(t)[f(\underline{x}(t), \underline{\theta}, t)-\dot{\underline{x}}(t)] dt
+\]
+Take the derivative of this augmented loss function with respect to the $\underline{\theta}$ in a total sense.
+\[
+\frac{dL}{d\underline{\theta}} = \frac{d}{d\underline{\theta}}\int^T_{t_0}{g(\underline{x}(t), \underline{\theta}, t) + \underline{\lambda}^{{\top}}(t)[f(\underline{x}(t), \underline{\theta}, t)-\dot{\underline{x}}(t)] dt}
+\]
+\[
+\frac{dL}{d\underline{\theta}} = \int^T_{t_0}
+\frac{\partial g}{\partial \underline{\theta}} + \frac{\partial g}{\partial \underline{x}}\frac{d\underline{x}}{d\underline{\theta}} + \underline{\lambda}^{{\top}}(t) \left( \frac{\partial f}{\partial \underline{\theta}} + \frac{\partial f}{\partial \underline{x}}\frac{d\underline{x}}{d\underline{\theta}} - \frac{d}{d\underline{\theta}}\frac{d\underline{x}}{dt}\right)\quad dt
+\]
+rearrange and bracket
+\[
+= \int^T_{t_0}{\underline{\lambda}^{{\top}}(t) \frac{\partial f}{\partial \underline{\theta}}
++ \frac{\partial g}{\partial \underline{\theta}} +   
+\left(\underline{\lambda}^{\top} (t) \frac{\partial f}{\partial \underline{x}}  
++ \frac{\partial g}{\partial \underline{x}}\right)\frac{d\underline{x}}{d\underline{\theta}}
+- \underline{\lambda}^{{\top}}(t)\frac{d}{dt}
+\frac{d\underline{x}}{d\underline{\theta}}  \quad dt }
+\]
+
+Integration by parts:
+\[
+\frac{d}{dt}(a b)=\dot{a}b+a\dot{b} \qquad \int_{t_0}^{T} (\dot{a}b) dt = \left.(ab)\right|_{t_0}^T - \int_{t_0}^{T} (a\dot{b}) dt
+\]
+\[
+\int_{t_0}^{T} -\underline{\lambda}^{{\top}}(t)\frac{d}{dt}
+\frac{d\underline{x}}{d\underline{\theta}} dt = \left.\left(-\underline{\lambda}^{{\top}}(t)\frac{d\underline{x}}{d\underline{\theta}}\right)\right|_{t_0}^T + \int_{t_0}^{T} \frac{d\underline{\lambda}^{{\top}}}{dt}\frac{d\underline{x}}{d\underline{\theta}} dt
+\]
+
+\[
+\left.\left(-\underline{\lambda}^{{\top}}(t)\frac{d\underline{x}}{d\underline{\theta}}\right)\right|_{t_0}^T = 
+\bcancel{\underline{\lambda}^{{\top}}(t_0)\frac{d\underline{x}}{d\underline{\theta}}(t_0)} - \underline{\lambda}^{{\top}}(T)\frac{d\underline{x}}{d\underline{\theta}}(T) + \int_{t_0}^{T} \frac{d\underline{\lambda}^{{\top}}}{dt}\frac{d\underline{x}}{d\underline{\theta}} dt
+\]
+We can write the loss now as 
+\[
+\frac{dL}{d\underline{\theta}} = - \underline{\lambda}^{{\top}}(T)\frac{d\underline{x}}{d\underline{\theta}}(T) + \int^T_{t_0}{\left(\underline{\lambda}^{{\top}}(t) \frac{\partial f}{\partial \underline{\theta}}
++ \frac{\partial g}{\partial \underline{\theta}} \right)+   
+\left(\underline{\lambda}^{\top} (t) \frac{\partial f}{\partial \underline{x}}  
++ \frac{\partial g}{\partial \underline{x}}\right)\frac{d\underline{x}}{d\underline{\theta}}
+- \frac{d\underline{\lambda}^{{\top}}}{dt}\frac{d\underline{x}}{d\underline{\theta}}  \quad dt }
+\]
+\[
+\frac{dL}{d\underline{\theta}} = \bcancel{- \underline{\lambda}^{{\top}}(T)\frac{d\underline{x}}{d\underline{\theta}}(T)} + \int^T_{t_0}{\left(\underline{\lambda}^{{\top}}(t) \frac{\partial f}{\partial \underline{\theta}}
++ \frac{\partial g}{\partial \underline{\theta}} \right)+   
+\bcancel{\left(\underline{\lambda}^{\top} (t) \frac{\partial f}{\partial \underline{x}}  
++ \frac{\partial g}{\partial \underline{x}} - \frac{d\underline{\lambda}^{{\top}}}{dt}\right)}\frac{d\underline{x}}{d\underline{\theta}}
+\quad dt }
+\]
+We must choose a $\underline{\lambda}^{\top} (t)$ such that the difficult quantity $\frac{d\underline{x}}{d\underline{\theta}}$ is eliminated
+\[
+\left\{\begin{array}{l}
+\begin{aligned}
+& \dot{\underline{\lambda}} = \left(\frac{\partial f}{\partial \underline{x}}\right)^{\top}  \underline{\lambda}
+- \left(\frac{\partial g}{\partial \underline{x}}\right)^{\top}\\
+& \underline{\lambda}(T) = \underline{0}
+\end{aligned}
+\end{array}\right.
+\]
+We numerically integrate the system forward in time and then formulate the linear adjoint system and solve it numerically backward in time. We then compute the integral in $\frac{dL}{d\underline{\theta}}$ using the $\lambda$ values and the other partials are easily computed by generic AD. This is implemented as a pushforwar and pullback with primitive rules in AD packages.
+
+
+\subsection{Pontryagin's Maximum Principle}
+
+\[
+\dot x(t) = f\left(x(t),u(t), t\right), \quad x(t_0) = x_0
+\]
+Where $u(t)$ is piece-wise continuous and differentiable.
+\[
+J(u(t)) = \Phi(x(T)) + \int^T_{t_0}{g(x(t), u(t), t) dt}
+\]
+
+\[
+\left\{\begin{array}{l}
+\begin{aligned}
+& \underset{u}{\text{minimize}} & & J \\
+& \text{subject to} & & \dot{x}(t) \\
+\end{aligned}
+\end{array}\right.
+\]
+
+Use the lagrange multiplier ($\lambda^{\top}$) method for this equality constrained optimization
+\[
+L=J-\int_{t_0}^T \lambda^{{\top}}(t)[\dot{x}(t)-f(x(t), u(t), t)] dt
+\]
+\[
+L = \Phi(x(T)) + \int^T_{t_0}{g(x(t), u(t), t) dt} - \int_{t_0}^T \lambda^{{\top}}(t)[\dot{x}(t)-f(x(t), u(t), t)] dt 
+\]
+\[
+L = \Phi(x(T)) + \int^T_{t_0}{g(x(t), u(t), t) - \lambda^{{\top}}(t)\dot{x}(t)+\lambda^{{\top}}(t)f(x(t), u(t), t) \quad dt }
+\]
+Let $H(\lambda, x, u, t)$ be :
+\[
+H(\lambda, x, u)=\lambda^{{\top}} f(x, u)+g(x, u)
+\]
+We write the Lagrangian as:
+\[
+L(\lambda) = \Phi(x(T)) + \int^T_{t_0}{H(\lambda, x(t), u(t), t) - \lambda^{{\top}}(t)\dot{x}(t)\quad dt }
+\]
+Assume $u^*(t)$ is the optimal controller and $x^*(t)$ is the corresponding state trajectory.
+Allow a perturbation:
+\[
+u^\epsilon(t) = u^*(t) + \epsilon h(t) 
+\]
+\[
+\dot x^\epsilon(t) = f\left(x^\epsilon(t),u^\epsilon(t), t\right), \quad x(t_0) = x_0
+\]
+suppose
+\[
+\lim_{\epsilon \rightarrow 0} u^\epsilon(t) = u^*(t),
+\quad
+\left. \frac{\partial u^\epsilon}{\partial \epsilon} \right|_{\epsilon=0} = h(t),
+\quad
+\lim_{\epsilon \rightarrow 0}{x^\epsilon(t)} = x^*(t),
+\quad
+\left. \frac{\partial x^\epsilon}{\partial \epsilon} \right|_{\epsilon=0} \text{exists}
+\]
+the cost function becomes
+\[
+J(u^\epsilon(t)) = \Phi(x^\epsilon(T)) + \int^T_{t_0}{g(x^\epsilon(t), u^\epsilon(t), t) dt}
+\]
+and the Lagrangian:
+\[
+L = \Phi(x^\epsilon(T)) + \int^T_{t_0}{H(\lambda, x^\epsilon(t), u^\epsilon(t), t) - \lambda^{{\top}}(t)\dot{x}^\epsilon(t)\quad dt }
+\]
+By integration by parts:
+\[
+\frac{d}{dt}(a b)=\dot{a}b+a\dot{b} \qquad \int_{t_0}^{T} (\dot{a}b) dt = \left.(ab)\right|_{t_0}^T - \int_{t_0}^{T} (a\dot{b}) dt
+\]
+\[
+L = \Phi(x^\epsilon(T)) - \lambda^{{\top}}(T)x^\epsilon(T) + \lambda^{{\top}}(t_0)x^\epsilon(t_0) + \int^T_{t_0}{H(\lambda, x^\epsilon(t), u^\epsilon(t), t) + \dot{\lambda}^{{\top}}(t)x^\epsilon(t)\quad dt }
+\]
+\[
+L = \Phi(x^\epsilon(T)) - \lambda^{{\top}}(T)x^\epsilon(T) + \lambda^{{\top}}(t_0)x_0 + \int^T_{t_0}{H(\lambda, x^\epsilon(t), u^\epsilon(t), t) + \dot{\lambda}^{{\top}}(t)x^\epsilon(t)\quad dt }
+\]
+By the fundamental theorem of calculus
+\[
+\lim_{\epsilon \rightarrow 0}{L(u^\epsilon(t), \lambda)} = \left.\frac{dL(u^\epsilon(t))}{d\epsilon} \right|_{\epsilon=0} =\frac{\partial L}{\partial \epsilon} + \left. \frac{\partial L}{\partial u^\epsilon}\right|_{u^\epsilon=u^*}    \left. \frac{du^\epsilon}{d\epsilon}\right|_{\epsilon=0} = 0+0h(t) = \textbf{0}
+\]
+Take the derivative of the RHS:
+\[
+0 = \frac{d}{d\epsilon}\left[\Phi(x^\epsilon(T)) - \lambda^{{\top}}(T)x^\epsilon(T)\right]_{\epsilon=0} + \int^T_{t_0}{\frac{d}{d\epsilon}\left[H(\lambda, x^\epsilon(t), u^\epsilon(t), t) + \dot{\lambda}^{{\top}}(t)x^\epsilon(t)\right]_{\epsilon=0} \quad dt }
+\]
+\[
+0 = \frac{\partial \Phi}{\partial \epsilon}+\left.\frac{\partial \Phi}{\partial x^\epsilon}\right|_{x^\epsilon(T)}\left.\frac{d x^\epsilon}{d \epsilon}\right|_{x^\epsilon(T)}
+- \lambda^{{\top}}(T)\left.\frac{d x^\epsilon}{d \epsilon}\right|_{x^\epsilon(T)} + \int^T_{t_0}{\frac{d}{d\epsilon}\left[H(\lambda, x^\epsilon(t), u^\epsilon(t), t) + \dot{\lambda}^{{\top}}(t)x^\epsilon(t)\right]_{\epsilon=0} \quad dt }
+\]
+We expand the Hamiltonian and take its derivative
+\[
+\frac{d}{d\epsilon} \lambda^{{\top}} f(x^\epsilon, u^\epsilon)+g(x^\epsilon, u^\epsilon) = \lambda^{{\top}} \frac{d f(x^\epsilon, u^\epsilon)}{d\epsilon} + \frac{d g(x^\epsilon, u^\epsilon)}{d\epsilon}
+\]
+
+\[
+\frac{d}{d\epsilon}f(x^\epsilon,u^\epsilon) = 
+\frac{\partial f}{\partial \epsilon} 
++ \frac{\partial f}{\partial u^\epsilon}   \frac{du^\epsilon}{d\epsilon} 
++ \frac{\partial f}{\partial x^\epsilon}   \frac{dx^\epsilon}{d\epsilon}
+\]
+the derivative of Lagrangian w.r.t. to $\epsilon$ then becomes
+\[
+0 = \left(\dot{\Phi}(x^*(T))
+- \lambda^{{\top}}(T)\right)\left.\frac{d x^\epsilon}{d \epsilon}\right|_{x^\epsilon(T)} + \int^T_{t_0}{ \lambda \left( \frac{\partial f}{\partial u^\epsilon} \frac{du^\epsilon}{d\epsilon} 
++ \frac{\partial f}{\partial x^\epsilon}   \frac{dx^\epsilon}{d\epsilon} \right)
++ \frac{\partial g}{\partial u^\epsilon}   \frac{du^\epsilon}{d\epsilon} 
++ \frac{\partial g}{\partial x^\epsilon}   \frac{dx^\epsilon}{d\epsilon} 
++ \dot{\lambda}^{{\top}}(t)\frac{dx^\epsilon}{d\epsilon} \quad dt }
+\]
+\[
+0 = \left(\dot{\Phi}(x^*(T))
+- \lambda^{{\top}}(T)\right)\left.\frac{d x^\epsilon}{d \epsilon}\right|_{x^\epsilon(T)} + \int^T_{t_0}{ \left( \lambda \frac{\partial f}{\partial u^\epsilon}
++ \frac{\partial g}{\partial u^\epsilon}\right)   
+\frac{du^\epsilon}{d\epsilon} 
++ \left(\lambda \frac{\partial f}{\partial x^\epsilon}  
++ \frac{\partial g}{\partial x^\epsilon} 
++ \dot{\lambda}^{{\top}}(t)\right)
+\frac{dx^\epsilon}{d\epsilon} \quad dt }
+\]
+\[
+0 = \left(\dot{\Phi}(x^*(T))
+- \lambda^{{\top}}(T)\right)\left.\frac{d x^\epsilon}{d \epsilon}\right|_{x^\epsilon(T)} + 
+\int^T_{t_0}{ 
+\left( \lambda \frac{\partial f}{\partial u^\epsilon}
++ \frac{\partial g}{\partial u^\epsilon}\right)   
+h(t)
++ \left(\lambda \frac{\partial f}{\partial x^\epsilon}  
++ \frac{\partial g}{\partial x^\epsilon} 
++ \dot{\lambda}^{{\top}}(t)\right)
+\frac{dx^\epsilon}{d\epsilon} \quad dt }
+\]
+since this needs to be zero then we need to choose $\lambda$ with the 3 conditions bellow by the Fundamental lemma of variational calculus:
+\[
+\left\{\begin{array}{l}
+\begin{aligned}
+& \dot{\lambda}(t) = 
+- \lambda \frac{\partial f}{\partial x}  
++ \frac{\partial g}{\partial x} 
+= -\frac{\partial H}{\partial x}\\
+& 0 = \lambda \frac{\partial f}{\partial u}  
++ \frac{\partial g}{\partial u} = \frac{\partial H}{\partial u}\\
+& \lambda(T) = \dot{\Phi}(x^*(T))
+\end{aligned}
+\end{array}\right.
+\label{eq:optimal_control_loss}
+\]
+
+\section{Forward Parametric Sensitivity of Hybrid ODE System}
+\[
+\frac{d\underline{x}}{dt}=\dot{\underline{x}}(t) = \boldsymbol{f}\left(\underline{x}(t),\underline{\theta}, t\right), \quad \underline{x}(\underline{\theta}, t_0) = \underline{x}_0
+\]
+We augment the system with:
+\[
+\frac{dAUC_j}{dt} = x_j(t), \quad AUC_j(t_0) = 0
+\]
+where \(AUC_j\) is the an additional state variable dedicated to tracking the integral of state variable \(x_j\) over time which corresponds to the plasma concentration of the drug or the volume of the tumor that are proxies for drug exposure and tumor burden respectively.
+
+Let \(\theta\) be a vector such that:
+\[
+\theta = \left[ \theta_1, \theta_2, \ldots, \theta_\alpha, \theta_{\alpha+1}, \ldots, \theta_\beta, \theta_{\beta+1}, \ldots, \theta_p \right]
+\]
+where:
+\begin{itemize}
+    \item \(\theta_1, \theta_2, \ldots, \theta_\alpha\) represent the parameters of the ODE,
+    \item \(\theta_{\alpha+1}, \ldots, \theta_\beta\) are the dosing amounts ($m_i$),
+    \item \(\theta_{\beta+1}, \ldots, \theta_p\) correspond to the time points ($\tau_i$) for each dosing amount.
+\end{itemize}
+
+Where the solution to this system 
+\[
+\underline{x}(t, \underline{\theta}) \in \mathbb{R}^{n}
+\]
+is piece-wise continuous where the time points of the occurrence of the event/discontinuity $\tau_{i}$ that are part of the set of parameters $\underline{\theta}$ are defined by the roots of the trigger function
+\[
+\Psi\left(\underline{x}(t),\underline{\theta}, t\right) = 0, \qquad t_0 < \tau_{1} < \tau_{2} < ... < t_f
+\]
+for example:
+\[
+(t-\tau_1)(t-\tau_2)...(t-\tau_n) = 0
+\]
+The discontinuity is observed by the update function
+\[
+\underline{x}^+(\tau_i) = \Phi\left(\underline{x}^-(\tau_i),\underline{\theta}, \tau_i\right)
+\]
+for example:
+\[
+\underline{x}^+(\tau_i) = \underline{x}^-(\tau_i) + \underline{e}_j^\top m_i \qquad 
+\]
+where $\underline{e}_j$ is a one hot vector for the GI compartment to administer $m_i$ amount of the drug
+
+We want to obtain the derivative of the solution with respect to the parameters
+\[
+\underline{s}_k(t,\underline{\theta}) = \frac{\partial\underline{x}(t, \underline{\theta})}{\partial \theta_k}
+\]
+By Gronwall's theorem we can take the derivative of the original ODE system with respect to the parameters and with changing the order of differentiation we can obtain:
+\[
+\frac{\partial}{\partial \theta_k} \frac{d \underline{x}}{d t}=\frac{\partial \boldsymbol{f}}{\partial \underline{x}} \frac{\partial \underline{x}}{\partial \theta_k}+\frac{\partial \boldsymbol{f}}{\partial \theta_k} 
+\]\[
+\frac{d \underline{s}_k}{d t}=\frac{\partial \boldsymbol{f}}{\partial \underline{x}} \underline{s}_k+\frac{\partial \boldsymbol{f}}{\partial \theta_k}, \qquad \underline{s}_k(t_0,\underline{\theta}) = \underline{0}
+\]
+Let's consider at a specific moment of switching $t = \lim_{\epsilon \rightarrow 0} (\tau_i - \epsilon)$ the derivative in the total sense of the state with respect to the parameter
+\[
+\frac{d \underline{x}^-(\tau_i, \underline{\theta})}{d \theta_k} = \boldsymbol{f}(\underline{x}^-(\tau_i, \underline{\theta}), \tau_i, \underline{\theta}) \frac{d\tau_i}{d\theta_k} + \underline{s}^-_k(\tau_i, \underline{\theta})
+\]
+In the case where the initial condition is that of a continuous epoch/piece other than the first one we can write the equation for $\underline{s}^+_k(\tau_i, \underline{\theta})$
+\[
+\underline{x}(t, \underline{\theta}) = \underline{x}^+(\tau_i, \underline{\theta}) + \int^t_{\tau_i}{\boldsymbol{f}\left(\underline{x}(t),\underline{\theta}, t\right)dt}
+\]
+\[
+\underline{s}_k(t, \underline{\theta}) = \frac{\partial \underline{x}(t, \underline{\theta})}{\partial \theta_k} = -\boldsymbol{f}\left(\underline{x}^+(\tau_i, \underline{\theta}),\underline{\theta}, \tau_i\right) \frac{d\tau_i}{d\theta_k} + \frac{d \underline{x}^+(\tau_i, \underline{\theta})}{d\theta_k}+ \int^t_{\tau_i}{\frac{\partial \boldsymbol{f}\left(\underline{x}(t),\underline{\theta}, t\right)}{\partial \theta_k}dt}
+\]
+for $t = \lim_{\epsilon \rightarrow 0} (\tau_i + \epsilon)$ we get
+\[
+\underline{s}^+_k(\tau_i, \underline{\theta}) = -\boldsymbol{f}\left(\underline{x}^+(\tau_i, \underline{\theta}),\underline{\theta}, \tau_i\right) \frac{d\tau_i}{d\theta_k} + \frac{d \underline{x}^+(\tau_i, \underline{\theta})}{d\theta_k}
+\]
+where the initial condition post trigger/update $ \frac{d \underline{x}^+(\tau_i, \underline{\theta})}{d\theta_k}$ is given by
+\[
+\frac{d \underline{x}^+(\tau_i, \underline{\theta})}{d\theta_k} = \frac{\partial \Phi\left(\underline{x}^-(\tau_i),\underline{\theta}, \tau_i\right)}{\partial \underline{x}(\tau_i, \underline{\theta})}\frac{d \underline{x}^-(\tau_i, \underline{\theta})}{d \theta_k} + \frac{\partial \Phi\left(\underline{x}^-(\tau_i),\underline{\theta}, \tau_i\right)}{\partial\theta_k}\frac{d\tau_i}{d\theta_k}+\frac{\partial \Phi\left(\underline{x}^-(\tau_i),\underline{\theta}, \tau_i\right)}{\partial\theta_k}
+\]
+dropping the dependencies:
+\[
+\frac{d \underline{x}^+}{d\theta_k} = \frac{\partial \Phi^-}{\partial \underline{x}}\frac{d \underline{x}^-}{d \theta_k} + \frac{\partial \Phi^-}{\partial\theta_k}\frac{d\tau_i}{d\theta_k}+\frac{\partial \Phi^-}{\partial\theta_k}
+\]
+to obtain the derivative of the time point with respect to the parameters we use the trigger function $\Psi$
+\[
+\frac{\partial \Psi}{\partial \underline{x}} \frac{d \underline{x}^-}{d \theta_k}+\frac{\partial \Psi}{\partial t}|_{\tau_i} \frac{d \tau_i}{d \theta_k}+\frac{\partial \Psi}{\partial \theta_k}=0
+\]
+using the function for $\frac{d \underline{x}^-(\tau_i, \underline{\theta})}{d \theta_k}$ we can obtain $\frac{\partial \tau_i}{d \theta_k}$
+\[
+\frac{d \tau_i}{d \theta_k}=-\frac{\frac{\partial \Psi^-}{\partial \underline{x}} \underline{s}^-_k+\frac{\partial \Psi^-}{\partial\theta_k}}{\frac{\partial \Psi^-}{\partial \underline{x}} \boldsymbol{f}^-+\frac{\partial \Psi^-}{\partial t}}
+\]
+The procedure for the parametric sensitivity is thus:
+\[
+\dot{\underline{x}}(t) = \boldsymbol{f}\left(\underline{x}(t),\underline{\theta}, t\right), \quad \underline{x}(\underline{\theta}, t_0) = \underline{x}_0
+\]
+\[
+\Psi\left(\underline{x}(t),\underline{\theta}, t\right) = 0, \qquad 
+\]
+\[
+\underline{x}^+(\tau_i) = \Phi\left(\underline{x}^-(\tau_i),\underline{\theta}, \tau_i\right)
+\]
+\[
+\dot{\underline{s}}_k=\frac{\partial \boldsymbol{f}}{\partial \underline{x}} \underline{s}_k+\frac{\partial \boldsymbol{f}}{\partial \theta_k}, \qquad \underline{s}_k(t_0,\underline{\theta}) = \underline{0}
+\]
+In practice, the Jacobian-vector product(JVP) in the first term is computed directly by pushforward using dual numbers and the computational graph via automatic differentiation without having to compute the Jacobian in full. \\
+[\textit{smooth infinitesimal analysis \& complex-step differentiation}]
+for $k \in \{1,2,3,...,p\}$
+
+Let the Jacobian matrix \(J\) of the state of the system with respect to the parameters be defined as:
+\[
+J = \begin{bmatrix}
+\frac{\partial x_1}{\partial \theta_1} & \frac{\partial x_1}{\partial \theta_2} & \cdots & \frac{\partial x_1}{\partial \theta_p} \\
+\frac{\partial x_2}{\partial \theta_1} & \frac{\partial x_2}{\partial \theta_2} & \cdots & \frac{\partial x_2}{\partial \theta_p} \\
+\vdots & \vdots & \ddots & \vdots \\
+\frac{\partial x_n}{\partial \theta_1} & \frac{\partial x_n}{\partial \theta_2} & \cdots & \frac{\partial x_n}{\partial \theta_p} \\
+\end{bmatrix}
+\]
+
+where:
+\begin{itemize}
+    \item \(x_j\) for \(j = 1, \ldots, n\) are the state variables of the system,
+    \item \(\theta_k\) for \(k = 1, \ldots, p\) are the parameters of the system.
+\end{itemize}
+
+at trigger time we compute
+\[
+\frac{d \underline{x}^-}{d \theta_k} = \boldsymbol{f}^- \frac{d\tau_i}{d\theta_k} + \underline{s}^-_k
+\]
+\[
+\frac{d \underline{x}^+}{d\theta_k} = \frac{\partial \Phi^-}{\partial \underline{x}}\frac{d \underline{x}^-}{d \theta_k} + \frac{\partial \Phi^-}{\partial\theta_k}\frac{d\tau_i}{d\theta_k}+\frac{\partial \Phi^-}{\partial\theta_k}
+\]
+\[
+\underline{s}^+_k = -\boldsymbol{f}^+\frac{d\tau_i}{d\theta_k} + \frac{d \underline{x}^+}{d\theta_k}
+\]
+continue integration to the next trigger time point.
+There is a tradeoff in complexity since here we are computing the columns of a jacobian (directional derivative) and there are more parameters than there are states. At some P>>N the adjoint method is preferred since it computes the rows of the Jacobian (gradient).
+\section{Adjoint Parametric Sensitivity of Hybrid ODE System by Implicit or Lagrange Method }
+
+Consider a hybrid dynamical system with continuous dynamics governed by the differential equation
+\[
+\frac{d\underline{x}}{dt} = \boldsymbol{f}(\underline{x}(t), \underline{\theta}, t)
+\]
+where \(\underline{x} \in \mathbb{R}^n\) represents the state vector, \(\underline{\theta} \in \mathbb{R}^p\) the parameter vector, and \(t\) the time. The system undergoes discrete transitions at event times \(\{\tau_i\}_{i=1}^{m}\), determined by a set of trigger functions
+\[
+\Psi(\underline{x}(t), \underline{\theta}, t) = 0
+\]
+with update rules for the state
+\[
+\underline{x}^+(\tau_i) = \Phi(\underline{x}^-(\tau_i), \underline{\theta}, \tau_i)
+\]
+where \(\underline{x}^-(\tau_i)\) and \(\underline{x}^+(\tau_i)\) represent the state immediately before and after the transition at time \(\tau_i\), respectively.
+
+The goal is to compute the sensitivity of a scalar output \(J\) with respect to the parameters \(\underline{\theta}\), where \(J\) is a function of the final state \(\underline{x}(t_f)\) and possibly the entire trajectory \(\underline{x}(t)\). The adjoint method introduces the adjoint state \(\underline{\lambda}(t) \in \mathbb{R}^n\), which evolves according to the adjoint system. 
+\[
+-\frac{d\underline{\lambda}}{dt} = \frac{\partial \boldsymbol{f}}{\partial \underline{x}}^T \underline{\lambda} + \frac{\partial L}{\partial \underline{x}}
+\]
+with the terminal condition
+\[
+\underline{\lambda}(t_f) = \frac{\partial J}{\partial \underline{x}(t_f)}
+\]
+where \(L\) is the Lagrangian of the system, incorporating any path constraints or objectives that depend on the state trajectory. 
+
+At each discrete transition \(\tau_i\), the adjoint state undergoes a discontinuous change given by
+\[
+\underline{\lambda}^-(\tau_i) = \underline{\lambda}^+(\tau_i) + \frac{\partial \Phi}{\partial \underline{x}^-(\tau_i)}^T \underline{\lambda}^+(\tau_i)
+\]
+The gradient of \(J\) with respect to the parameters \(\underline{\theta}\) is obtained by integrating the adjoint system backwards in time from \(t_f\) to \(t_0\), and the needed derivatives can be expressed as
+\[
+\frac{dJ}{d\underline{\theta}} = \int_{t_0}^{t_f} \left( \frac{\partial \boldsymbol{f}}{\partial \underline{\theta}}^T \underline{\lambda} + \frac{\partial L}{\partial \underline{\theta}} \right) dt .
+\]
+This approach efficiently computes the gradient by solving the adjoint system in reverse time, accommodating both the continuous dynamics and the discrete transitions characteristic of hybrid systems.
+
+\end{document}

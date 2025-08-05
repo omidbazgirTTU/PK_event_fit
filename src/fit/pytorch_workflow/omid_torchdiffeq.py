@@ -83,21 +83,24 @@ class PKNeuralODE(nn.Module):
             predictions[i] = current_state.reshape(-1)
             # Integrate to next time point if not last point
             if i < len(times) - 1:
-                time_span = torch.tensor([float(t), float(times[i+1])], device=device)
-                # Integrate from current time to next time
-                next_state = odeint(
-                    self.dynamics,
-                    current_state,
-                    time_span,
-                    method='dopri5',
-                    atol=1e-7,
-                    rtol=1e-5
-                )
-                current_state = next_state[-1].reshape(1, 1)
+                t_next = times[i+1]
+                # Only integrate if there's actual time progression
+                if t_next > t:
+                    time_span = torch.tensor([float(t), float(t_next)], device=device)
+                    # Integrate from current time to next time
+                    next_state = odeint(
+                        self.dynamics,
+                        current_state,
+                        time_span,
+                        method='dopri5',
+                        atol=1e-7,
+                        rtol=1e-5
+                    )
+                    current_state = next_state[-1].reshape(1, 1)
         return predictions
 def load_data():
-    pk_data = pd.read_csv('pk_simulation_data.csv')
-    dosing_schedule = pd.read_csv('dosing_schedule.csv')
+    pk_data = pd.read_csv('../../../data/pk_simulation_data.csv')
+    dosing_schedule = pd.read_csv('../../../data/dosing_schedule.csv')
     return pk_data, dosing_schedule
 def train_model(model, times, concentrations, epochs=2000, lr=0.01):
     # Define optimizer and loss function
@@ -199,10 +202,17 @@ def main():
     true_conc = pk_data['True_Concentration (mg/L)'].values
     dosing_days = dosing_schedule['Day'].values
     dose_amounts = dosing_schedule['Dose_Amount (mg)'].values
+    
+    print(f"Data loaded:")
+    print(f"- Days range: {days.min():.3f} to {days.max():.3f}")
+    print(f"- Concentrations range: {observed_conc.min():.3f} to {observed_conc.max():.3f}")
+    print(f"- Dosing days: {dosing_days}")
+    print(f"- Dose amounts: {dose_amounts}")
+    print(f"- Data points: {len(days)}")
     # Create the Neural ODE model
     model = PKNeuralODE(dosing_days, dose_amounts, hidden_dim=64).to(device)
-    # Train the model
-    losses = train_model(model, days, observed_conc, epochs=2000, lr=0.01)
+    # Train the model (reduced epochs for testing)
+    losses = train_model(model, days, observed_conc, epochs=50, lr=0.01)
     # Plot training loss
     plt.figure(figsize=(10, 6))
     plt.plot(losses)
