@@ -197,14 +197,14 @@ def main():
     num_samples, n_segments, steps_per_segment, _ = data.shape
     print("Loaded dataset shape:", data.shape)
 
-    # 2) Define the known dosing times from your simulator
-    event_times = jnp.array([2.0, 5.0, 8.0])  # shape (3,)
-    event_doses = jnp.array([50.0, 50.0, 50.0])
-    t_final = 10.0
+    # 2) Define the known dosing times from your simulator (matching 2C_simulator.py)
+    event_times = jnp.array([12.0, 24.0, 36.0])  # shape (3,) - hours
+    event_doses = jnp.array([100.0, 100.0, 100.0])  # mg
+    t_final = 48.0
 
     # 3) Initialize the NN parameters
     rng = jax.random.PRNGKey(42)
-    layer_sizes = [2, 32, 32, 2]  # input=2 compartments, output=2 derivatives
+    layer_sizes = [2, 64, 64, 2]  # input=2 compartments, output=2 derivatives (standardized)
     nn_params = init_mlp_params(rng, layer_sizes)
 
     # 4) Set up optimizer
@@ -237,7 +237,7 @@ def main():
     true_segments = data[sample_idx]  # shape (4, 200, 2)
 
     # Let's build a time axis for plotting
-    segment_boundaries = jnp.array([0.0, 2.0, 5.0, 8.0, 10.0])
+    segment_boundaries = jnp.array([0.0, 12.0, 24.0, 36.0, 48.0])
     T_plot = []
     C1_true_list = []
     C2_true_list = []
