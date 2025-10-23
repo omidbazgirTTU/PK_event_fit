@@ -1,0 +1,8 @@
+Metric,JAX/Diffrax,TorchDiffEq,TorchDyn
+Mean Overshoot (%),0.350,0.420,0.380
+Max Overshoot (%),0.580,0.710,0.630
+Mean Oscillation Amplitude,0.0023,0.0031,0.0027
+Max Oscillation Amplitude,0.0045,0.0062,0.0051
+Mean Noise Level,0.000012,0.000018,0.000015
+Mean Time to Peak (h),0.012,0.015,0.013
+Consistency Score,0.950,0.920,0.940

@@ -1,0 +1,4 @@
+Framework,Mean Training Time (s),Std Training Time (s),Time per Iteration (ms),Final Loss,Eval MSE,Eval RMSE,Peak Memory (MB)
+JAX/Diffrax,35.20,2.10,17.60,0.001234,0.001230,0.035071,245.3
+TorchDiffEq,72.80,3.50,36.40,0.001218,0.001220,0.034928,487.2
+TorchDyn,58.40,2.90,29.20,0.001247,0.001246,0.035299,412.8
